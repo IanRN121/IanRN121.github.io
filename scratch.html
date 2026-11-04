@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ian's Kitchen</title>
+    <!-- Stylesheet created from scratch -->
+    <link rel="stylesheet" href="scratch.css">
+</head>
+<body>
+    <!-- Div 1: navigation back to the professional pages -->
+    <div id="top-bar">
+        <a href="index.html">Home</a>
+        <a href="resume.html">R&eacute;sum&eacute;</a>
+        <a href="app.html">Mystery Basket App</a>
+    </div>
+
+    <div id="hero">
+        <h1>Ian's Kitchen</h1>
+        <p>Cooking is my favorite hobby. It's part art, part science, and best when it's shared.</p>
+    </div>
+
+    <div id="content-wrapper">
+        <!-- Div 2: sidebar with on-page anchors -->
+        <div id="sidebar">
+            <h3>On This Page</h3>
+            <ul>
+                <li><a href="#why">Why I Cook</a></li>
+                <li><a href="#cooking-list">My Cooking Plan</a></li>
+                <li><a href="#video">Technique Video</a></li>
+                <li><a href="#tableau">Live Tableau Graph</a></li>
+                <li><a href="#app">Web App</a></li>
+            </ul>
+        </div>
+
+        <!-- Div 3: main column -->
+        <div id="main-column">
+            <div class="card-block" id="why">
+                <h2>Why I Cook</h2>
+                <img src="kitchen.svg" alt="Illustration of a pot on a stove with steam rising">
+                <p>I've started cooking a lot more lately and I'm enjoying it as an art. A shared meal is about
+                   more than food. It's time together, and it shows people they matter. Someday I want to build
+                   a kitchen made for cooking and hosting.</p>
+            </div>
+
+            <div class="card-block" id="cooking-list">
+                <h2>My Cooking Plan</h2>
+                <!-- Unordered list nested inside an ordered list -->
+                <ol>
+                    <li>Learn the fundamentals
+                        <ul>
+                            <li>Knife skills</li>
+                            <li>Cooking pasta properly</li>
+                            <li>Seasoning as you go</li>
+                        </ul>
+                    </li>
+                    <li>Cook for other people
+                        <ul>
+                            <li>Dinner for friends</li>
+                            <li>A Chopped-style cook-off</li>
+                        </ul>
+                    </li>
+                    <li>Design a future kitchen
+                        <ul>
+                            <li>Plenty of counter space</li>
+                            <li>Room to host</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p><a href="#top-bar">Back to top</a></p>
+            </div>
+
+            <div class="card-block video-wrap" id="video">
+                <h2>Technique Video</h2>
+                <iframe width="480" height="270"
+                        src="https://www.youtube.com/embed/UYhKDweME3A"
+                        title="How to cook the perfect pasta"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
+            </div>
+
+            <div class="card-block" id="tableau">
+                <h2>A Live Tableau Graph</h2>
+                <p>This interactive Tableau dashboard is embedded live, so you can hover and click it.</p>
+                <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+                <tableau-viz id="tableauViz"
+                             src="https://public.tableau.com/views/KPIDashboardBonusExample/KPIDashboard"
+                             toolbar="bottom" hide-tabs></tableau-viz>
+            </div>
+
+            <div class="card-block" id="app">
+                <h2>My Web App</h2>
+                <p>I built a Chopped-style <a href="app.html">Mystery Basket</a> generator with AI.
+                   It deals you four random ingredients and starts a cooking timer.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-note">
+        <p><a href="index.html">&larr; Back to my professional site</a></p>
+    </div>
+</body>
+</html>

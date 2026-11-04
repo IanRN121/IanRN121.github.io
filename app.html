@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mystery Basket</title>
+<style>
+  :root { --brand:#8c2f0b; --accent:#e07a2f; --bg:#fff4e0; --ink:#3b2a1a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Arial, sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:var(--brand); color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  header a { color:#fff; font-weight:bold; text-decoration:none; margin-left:16px; }
+  h1 { margin:0; font-size:1.4rem; }
+  main { max-width:820px; margin:24px auto; padding:0 16px; }
+  .panel { background:#fff; border-radius:10px; padding:18px 22px; margin-bottom:20px; box-shadow:0 1px 5px rgba(0,0,0,.15); }
+  .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  button { font-size:1rem; border:0; border-radius:6px; padding:10px 16px; cursor:pointer; background:var(--accent); color:#fff; font-weight:bold; }
+  button:hover { filter:brightness(.92); }
+  button.secondary { background:#6b4a2b; }
+  button.small { padding:6px 10px; font-size:.85rem; }
+  select, label { font-size:1rem; }
+  #basket { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-top:14px; }
+  .item { border:2px solid var(--accent); border-radius:8px; padding:12px; text-align:center; background:#fffaf0; min-height:120px; display:flex; flex-direction:column; justify-content:space-between; }
+  .item.locked { border-color:var(--brand); background:#ffe3b3; }
+  .cat { font-size:.75rem; text-transform:uppercase; letter-spacing:1px; color:#8a6a4a; }
+  .name { font-size:1.15rem; font-weight:bold; margin:8px 0; }
+  .item-buttons { display:flex; gap:6px; justify-content:center; }
+  #timer { font-size:3rem; font-weight:bold; text-align:center; font-family:"Courier New",monospace; }
+  #timer.warn { color:#c0392b; }
+  #status { text-align:center; min-height:1.4em; font-weight:bold; }
+  ul#history { padding-left:20px; margin:8px 0 0; }
+  .muted { color:#8a6a4a; font-size:.9rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>&#127859; Mystery Basket</h1>
+  <nav><a href="scratch.html">&larr; Kitchen Page</a><a href="index.html">Home</a></nav>
+</header>
+
+<main>
+  <div class="panel">
+    <p>Chopped-style challenge: get four random ingredients, then cook something with all of them before the timer runs out.
+       Lock the ingredients you like and re-roll the rest.</p>
+    <div class="controls">
+      <label>Difficulty:
+        <select id="difficulty">
+          <option value="easy">Friendly (normal pantry items)</option>
+          <option value="medium" selected>Chopped (a weird one sneaks in)</option>
+          <option value="hard">Chaos (two weird ingredients)</option>
+        </select>
+      </label>
+      <button id="deal">Deal new basket</button>
+      <button id="reroll" class="secondary">Re-roll unlocked</button>
+      <button id="save" class="secondary">Save basket</button>
+    </div>
+    <div id="basket" aria-live="polite"></div>
+  </div>
+
+  <div class="panel">
+    <div id="timer">20:00</div>
+    <div id="status"></div>
+    <div class="controls" style="justify-content:center;">
+      <label>Minutes: <select id="minutes"><option>10</option><option>15</option><option selected>20</option><option>30</option></select></label>
+      <button id="start">Start</button>
+      <button id="pause" class="secondary">Pause</button>
+      <button id="reset" class="secondary">Reset</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <strong>Saved baskets</strong>
+    <ul id="history"></ul>
+    <p class="muted" id="history-empty">Nothing saved yet.</p>
+  </div>
+</main>
+
+<script>
+  // Ingredient pools by category. "weird" items are the Chopped-style curveballs.
+  const POOLS = {
+    Protein:  ["Chicken thighs","Ground beef","Salmon","Shrimp","Eggs","Tofu","Pork chops","Canned tuna","Sausage","Black beans"],
+    Produce:  ["Sweet potato","Spinach","Bell pepper","Mango","Zucchini","Mushrooms","Apples","Cabbage","Lemons","Avocado"],
+    Pantry:   ["Pasta","Rice","Tortillas","Peanut butter","Coconut milk","Oats","Honey","Soy sauce","Bread","Canned tomatoes"],
+    Weird:    ["Gummy bears","Pickle juice","Hot Cheetos","Marshmallows","Ranch dressing","Canned spaghetti","Crushed Oreos","Sriracha","Maple syrup","Sardines"]
+  };
+  const NORMAL_CATS = ["Protein","Produce","Pantry"];
+
+  let basket = [];      // [{cat, name, locked}]
+  let timerId = null, remaining = 20 * 60;
+
+  const $ = id => document.getElementById(id);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Which categories fill the 4 slots for each difficulty
+  function slotsFor(level) {
+    if (level === "easy")   return ["Protein","Produce","Pantry", pick(NORMAL_CATS)];
+    if (level === "medium") return ["Protein","Produce","Pantry","Weird"];
+    return ["Protein", pick(["Produce","Pantry"]), "Weird", "Weird"];
+  }
+
+  function rollItem(cat, avoid) {
+    let name, tries = 0;
+    do { name = pick(POOLS[cat]); tries++; } while (avoid.includes(name) && tries < 30);
+    return { cat, name, locked: false };
+  }
+
+  function deal() {
+    const slots = slotsFor($("difficulty").value);
+    basket = [];
+    slots.forEach(cat => basket.push(rollItem(cat, basket.map(b => b.name))));
+    render();
+  }
+
+  function rerollUnlocked() {
+    if (!basket.length) return deal();
+    basket = basket.map((it, i) => {
+      if (it.locked) return it;
+      return rollItem(it.cat, basket.map(b => b.name));
+    });
+    render();
+  }
+
+  function rerollOne(i) {
+    if (basket[i].locked) return;
+    basket[i] = rollItem(basket[i].cat, basket.map(b => b.name));
+    render();
+  }
+
+  function toggleLock(i) { basket[i].locked = !basket[i].locked; render(); }
+
+  function render() {
+    const el = $("basket");
+    el.innerHTML = "";
+    basket.forEach((it, i) => {
+      const d = document.createElement("div");
+      d.className = "item" + (it.locked ? " locked" : "");
+      d.innerHTML = '<div class="cat"></div><div class="name"></div><div class="item-buttons"></div>';
+      d.querySelector(".cat").textContent = it.cat;
+      d.querySelector(".name").textContent = it.name;
+      const bar = d.querySelector(".item-buttons");
+      const lock = document.createElement("button");
+      lock.className = "small secondary";
+      lock.textContent = it.locked ? "Unlock" : "Lock";
+      lock.onclick = () => toggleLock(i);
+      const re = document.createElement("button");
+      re.className = "small";
+      re.textContent = "Re-roll";
+      re.onclick = () => rerollOne(i);
+      bar.append(lock, re);
+      el.appendChild(d);
+    });
+  }
+
+  /* ---------- Timer ---------- */
+  function fmt(s) {
+    const m = String(Math.floor(s / 60)).padStart(2, "0");
+    const r = String(s % 60).padStart(2, "0");
+    return m + ":" + r;
+  }
+  function drawTimer() {
+    $("timer").textContent = fmt(remaining);
+    $("timer").classList.toggle("warn", remaining <= 60 && remaining > 0);
+  }
+  function start() {
+    if (timerId) return;
+    if (!basket.length) deal();
+    if (remaining <= 0) remaining = parseInt($("minutes").value, 10) * 60;
+    $("status").textContent = "Cook!";
+    timerId = setInterval(() => {
+      remaining--;
+      drawTimer();
+      if (remaining === 60) $("status").textContent = "One minute left!";
+      if (remaining <= 0) {
+        clearInterval(timerId); timerId = null;
+        $("status").textContent = "Time! Hands up, step away from the stove.";
+      }
+    }, 1000);
+  }
+  function pause() {
+    if (timerId) { clearInterval(timerId); timerId = null; $("status").textContent = "Paused"; }
+  }
+  function resetTimer() {
+    pause();
+    remaining = parseInt($("minutes").value, 10) * 60;
+    $("status").textContent = "";
+    drawTimer();
+  }
+
+  /* ---------- Saved baskets (localStorage, wrapped in try/catch) ---------- */
+  function loadSaved() {
+    try { return JSON.parse(localStorage.getItem("baskets") || "[]"); } catch (e) { return []; }
+  }
+  function storeSaved(list) {
+    try { localStorage.setItem("baskets", JSON.stringify(list)); } catch (e) { /* storage unavailable */ }
+  }
+  let saved = loadSaved();
+  function renderSaved() {
+    const ul = $("history");
+    ul.innerHTML = "";
+    saved.slice().reverse().forEach(txt => {
+      const li = document.createElement("li");
+      li.textContent = txt;
+      ul.appendChild(li);
+    });
+    $("history-empty").style.display = saved.length ? "none" : "block";
+  }
+  function saveBasket() {
+    if (!basket.length) return;
+    saved.push(basket.map(b => b.name).join(" + "));
+    if (saved.length > 10) saved.shift();
+    storeSaved(saved);
+    renderSaved();
+  }
+
+  $("deal").onclick = deal;
+  $("reroll").onclick = rerollUnlocked;
+  $("save").onclick = saveBasket;
+  $("start").onclick = start;
+  $("pause").onclick = pause;
+  $("reset").onclick = resetTimer;
+  $("minutes").onchange = resetTimer;
+
+  deal();
+  renderSaved();
+  drawTimer();
+</script>
+</body>
+</html>
