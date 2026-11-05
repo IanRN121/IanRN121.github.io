@@ -115,11 +115,13 @@ Lock the ingredients you like and re-roll the rest. When you finish, score your 
 const POOLS = {
 Protein: ["Chicken","Ground beef","Eggs","Salmon","Shrimp","Italian sausage","Steak","Chorizo"],
 Produce: ["Spinach","Tomatoes","Onion","Garlic","Sweet potatoes","Bell pepper","Mushrooms","Zucchini","Avocado","Jalapenos"],
-Pantry: ["Gnocchi","Flour","Butter","Heavy cream","Lemon juice","Sourdough bread","Pasta","Rice","Tortillas","Canned tomatoes","Coconut milk","Cotija cheese"],
-Weird: ["Gummy bears","Pickle juice","Hot Cheetos","Marshmallows","Ranch dressing","Canned spaghetti","Crushed Oreos","Sriracha","Maple syrup","Sardines","Dr Pepper","Funeral potatoes"]
+Pantry: ["Gnocchi","Flour","Butter","Heavy cream","Lemon juice","Sourdough bread","Chimichurri","Pasta","Rice","Tortillas","Canned tomatoes","Coconut milk","Cotija cheese"],
+Weird: ["Gummy bears","Pickle juice","Hot Cheetos","Marshmallows","Ranch dressing","Canned spaghetti","Crushed Oreos","Sriracha","Maple syrup","Sardines","Dr Pepper","Funeral potatoes","Ice cream"]
 };
 // Free staples: always allowed in every round, so they never take up a basket slot.
 const FREE_STAPLES = ["salt","black pepper","olive oil"];
+// Gear every cook gets: a cast iron pan and a well-sharpened knife.
+const GEAR = ["cast iron pan","sharp knife"];
 const NORMAL_CATS = ["Protein","Produce","Pantry"];
 const MULTIPLIER = { easy: 1, medium: 1.5, hard: 2 };
 
@@ -188,7 +190,7 @@ btns.appendChild(lockBtn);
 btns.appendChild(rollBtn);
 el.appendChild(d);
 });
-$("staples").textContent = "Free staples you can always use: " + FREE_STAPLES.join(", ") + ".";
+$("staples").textContent = "Free staples you can always use: " + FREE_STAPLES.join(", ") + ". Your gear: " + GEAR.join(" and ") + ".";
 }
 
 /* ---------- Timer ---------- */
