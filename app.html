@@ -60,6 +60,7 @@ Lock the ingredients you like and re-roll the rest. When you finish, score your 
 <button id="save" class="secondary">Save basket</button>
 </div>
 <div id="basket" aria-live="polite"></div>
+<p class="muted" id="staples"></p>
 </div>
 
 <div class="panel">
@@ -110,13 +111,15 @@ Lock the ingredients you like and re-roll the rest. When you finish, score your 
 
 <script>
 // Ingredient pools by category. "Weird" items are the Chopped-style curveballs.
-// Draft lists: edit these to match your own pantry.
+// Built from Ian's real kitchen: the dishes he cooks most (creamy chicken spinach gnocchi, ground beef, sweet potatoes).
 const POOLS = {
-Protein: ["Chicken thighs","Ground beef","Salmon","Shrimp","Eggs","Tofu","Pork chops","Chorizo","Steak","Black beans","Italian sausage","Canned tuna"],
-Produce: ["Sweet potato","Spinach","Bell pepper","Mango","Zucchini","Mushrooms","Jalapenos","Cabbage","Limes","Avocado","Corn on the cob","Red onion"],
-Pantry: ["Pasta","Rice","Tortillas","Peanut butter","Coconut milk","Oats","Honey","Soy sauce","Bread","Canned tomatoes","Cotija cheese","Tortilla chips"],
+Protein: ["Chicken","Ground beef","Eggs","Salmon","Shrimp","Italian sausage","Steak","Chorizo"],
+Produce: ["Spinach","Tomatoes","Onion","Garlic","Sweet potatoes","Bell pepper","Mushrooms","Zucchini","Avocado","Jalapenos"],
+Pantry: ["Gnocchi","Flour","Butter","Heavy cream","Lemon juice","Sourdough bread","Pasta","Rice","Tortillas","Canned tomatoes","Coconut milk","Cotija cheese"],
 Weird: ["Gummy bears","Pickle juice","Hot Cheetos","Marshmallows","Ranch dressing","Canned spaghetti","Crushed Oreos","Sriracha","Maple syrup","Sardines","Dr Pepper","Funeral potatoes"]
 };
+// Free staples: always allowed in every round, so they never take up a basket slot.
+const FREE_STAPLES = ["salt","black pepper","olive oil"];
 const NORMAL_CATS = ["Protein","Produce","Pantry"];
 const MULTIPLIER = { easy: 1, medium: 1.5, hard: 2 };
 
@@ -185,6 +188,7 @@ btns.appendChild(lockBtn);
 btns.appendChild(rollBtn);
 el.appendChild(d);
 });
+$("staples").textContent = "Free staples you can always use: " + FREE_STAPLES.join(", ") + ".";
 }
 
 /* ---------- Timer ---------- */
